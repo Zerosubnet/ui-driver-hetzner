@@ -14,6 +14,7 @@ const get          = Ember.get;
 const set          = Ember.set;
 const alias        = Ember.computed.alias;
 const service      = Ember.inject.service;
+const hash         = Ember.RSVP.hash;
 
 const defaultRadix = 10;
 const defaultBase  = 1024;
@@ -26,6 +27,8 @@ export default Ember.Component.extend(NodeDriver, {
   driverName: '%%DRIVERNAME%%',
   config:     alias('model.%%DRIVERNAME%%Config'),
   app:        service(),
+  hetzner: service(),
+  step: 1,
 
   init() {
     // This does on the fly template compiling, if you mess with this :cry:
@@ -45,8 +48,34 @@ export default Ember.Component.extend(NodeDriver, {
     // bootstrap is called by rancher ui on 'init', you're better off doing your setup here rather then the init function to ensure everything is setup correctly
     let config = get(this, 'globalStore').createRecord({
       type: '%%DRIVERNAME%%Config',
-      cpuCount: 2,
-      memorySize: 2048,
+      apiToken: null,
+      image: 'ubuntu-22.04',
+      imageArch: null,
+      imageId: null,
+      serverType: 'cx21',
+      serverLocation: '',
+      existingKey: '',
+      existingKeyId: null,
+      additionalKeys: [],
+            
+      userData: '',
+      volumes: [],
+      networks: [],
+      usePrivateNetwork: false,
+      firewalls: [],
+      serverLabels: [],
+      keyLabes: [],
+      placementGroup: '',
+      autoSpread: false,
+      sshUser: null,
+      sshPort: null,
+      primaryIPv4: null,
+      primaryIPv6: null,
+      waitOnError: 0,
+      waitOnPolling: 1,
+      waitForRunningTimeout: 0,
+      disablePublic4: false,
+      disablePublic6: false,
     });
 
     set(this, 'model.%%DRIVERNAME%%Config', config);
@@ -62,11 +91,16 @@ export default Ember.Component.extend(NodeDriver, {
     }
 
     // Add more specific errors
-
-    // Check something and add an error entry if it fails:
-    if ( parseInt(get(this, 'config.memorySize'), defaultRadix) < defaultBase ) {
-      errors.push('Memory Size must be at least 1024 MB');
+    if (!this.get('model.%%DRIVERNAME%%Config.serverLocation')) {
+      errors.push('Specifying a %%DRIVERNAME%% Server Location is required');
     }
+
+    if (!this.validateCloudCredentials()) {
+      errors.push(this.intl.t('nodeDriver.cloudCredentialError'));
+    }
+
+
+    
 
     // Set the array of errors for display,
     // and return true if saving should continue.
@@ -78,6 +112,22 @@ export default Ember.Component.extend(NodeDriver, {
       return true;
     }
   },
+
+  actions: {
+    finishAndSelectCloudCredential(cred) {
+      if (cred) {
+        set(this, 'model.cloudCredentialId', get(cred, 'id'));
+
+        this.send('authHetzner');
+      }
+    },
+    authHetzner(cb) {
+      const auth = {
+        type: 'cloud',
+        token: get(this, 'model.cloudCredentialId'),
+      };
+    }
+  }
 
   // Any computed properties or custom logic can go here
 });

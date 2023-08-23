@@ -1,15 +1,15 @@
 {
-  "name": "ui-driver-skel",
+  "name": "ui-driver-hetzner",
   "version": "0.0.2",
-  "description": "Skeleton Rancher UI driver for custom docker-machine drivers",
+  "description": "Rancher UI driver for Hetzner docker-machine driver",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rancher/ui-driver-skel.git"
+    "url": "git+https://github.com/Zerosubnet/ui-driver-hetzner.git"
   },
-  "author": "Rancher Labs, Inc.",
+  "author": "ZeroSubnet",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/rancher/rancher/issues"
+    "url": "https://github.com/Zerosubnet/ui-driver-hetzner/issues"
   },
   "scripts": {
     "start": "./node_modules/.bin/gulp server",
